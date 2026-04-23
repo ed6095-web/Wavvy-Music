@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { NavLink } from 'react-router-dom';
 import './Sidebar.css';
 
-const mainNavItems = [
+const navItems = [
   {
     to: '/', label: 'Home', exact: true,
     icon: (
@@ -25,46 +25,13 @@ const mainNavItems = [
   },
 ];
 
-const allSidebarItems = [
-  ...mainNavItems,
-  {
-    to: '/favorites', label: 'Favorites',
-    icon: (
-      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-    ),
-  },
-  {
-    to: '/offline', label: 'Offline',
-    icon: (
-      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
-    ),
-  },
-];
-
-const moreItems = [
-  {
-    to: '/favorites', label: 'Favorites',
-    icon: (
-      <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-    ),
-  },
-  {
-    to: '/offline', label: 'Offline',
-    icon: (
-      <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
-    ),
-  },
-];
-
 export default function Sidebar() {
-  const [showMore, setShowMore] = useState(false);
-
   return (
     <>
       {/* Desktop Sidebar */}
       <aside className="sidebar glass">
         <nav className="sidebar-nav">
-          {allSidebarItems.map(item => (
+          {navItems.map(item => (
             <NavLink
               key={item.to}
               to={item.to}
@@ -80,58 +47,27 @@ export default function Sidebar() {
         <div className="sidebar-moods">
           <p className="sidebar-section-title">Moods</p>
           {['Happy', 'Chill', 'Workout', 'Focus', 'Sad', 'Party'].map(mood => (
-            <a key={mood} href={`/search?q=${mood.toLowerCase()} music`} className="mood-chip">
+            <a key={mood} href={`/search?q=${mood.toLowerCase()} bollywood music`} className="mood-chip">
               {mood}
             </a>
           ))}
         </div>
       </aside>
 
-      {/* Mobile Bottom Nav — 3 tabs + "More" */}
+      {/* Mobile Bottom Nav — 3 tabs only */}
       <nav className="bottom-nav glass">
-        {mainNavItems.map(item => (
+        {navItems.map(item => (
           <NavLink
             key={item.to}
             to={item.to}
             end={item.exact}
             className={({ isActive }) => `bottom-nav-item ${isActive ? 'active' : ''}`}
-            onClick={() => setShowMore(false)}
           >
             <span className="bottom-nav-icon">{item.icon}</span>
             <span className="bottom-nav-label">{item.label}</span>
           </NavLink>
         ))}
-
-        {/* More button */}
-        <button
-          className={`bottom-nav-item bottom-nav-btn ${showMore ? 'active' : ''}`}
-          onClick={() => setShowMore(v => !v)}
-        >
-          <span className="bottom-nav-icon">
-            <svg viewBox="0 0 24 24" fill="currentColor">
-              <circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/>
-            </svg>
-          </span>
-          <span className="bottom-nav-label">More</span>
-        </button>
       </nav>
-
-      {/* More menu popup */}
-      {showMore && (
-        <div className="more-menu glass">
-          {moreItems.map(item => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              className={({ isActive }) => `more-menu-item ${isActive ? 'active' : ''}`}
-              onClick={() => setShowMore(false)}
-            >
-              {item.icon}
-              <span>{item.label}</span>
-            </NavLink>
-          ))}
-        </div>
-      )}
     </>
   );
 }

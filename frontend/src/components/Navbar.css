@@ -22,6 +22,17 @@
 .nav-logo-text {
   font-size: 1.3rem; font-weight: 800;
   letter-spacing: -0.03em;
+  background: linear-gradient(270deg, #ff4081, #7b2fff, #00d2ff, #ff4081);
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: wavvy-gradient 4s ease infinite;
+}
+
+@keyframes wavvy-gradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 .nav-search { flex: 1; max-width: 480px; margin: 0 auto; }
@@ -189,8 +200,9 @@
 
 /* Responsive */
 @media (max-width: 768px) {
-  .navbar { padding: 0 14px; }
-  .nav-logo-text { display: none; }
-  .nav-search { max-width: none; }
+  .navbar { padding: 0 14px; justify-content: space-between; }
+  .nav-logo { flex: 1; justify-content: center; position: absolute; left: 50%; transform: translateX(-50%); }
+  .nav-logo-text { display: block; font-size: 1.5rem; }
+  .nav-search { display: none; } /* Search page has its own search bar on mobile */
   .account-dropdown { right: -4px; width: 220px; }
 }

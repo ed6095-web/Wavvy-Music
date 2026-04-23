@@ -1,10 +1,9 @@
 import React, { createContext, useContext, useRef, useState, useEffect, useCallback } from 'react';
-import YouTube from 'react-youtube';
 
 const PlayerContext = createContext(null);
 
 export function PlayerProvider({ children }) {
-  const ytPlayerRef = useRef(null);
+  const audioRef = useRef(new Audio());
   const [currentSong, setCurrentSong] = useState(null);
   const [queue, setQueue] = useState([]);
   const [queueIndex, setQueueIndex] = useState(0);
@@ -26,27 +25,68 @@ export function PlayerProvider({ children }) {
   const [repeat, setRepeat] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Sync volume when changed
+  // Setup HTML5 Audio element listeners
   useEffect(() => {
-    if (ytPlayerRef.current && ytPlayerRef.current.setVolume) {
-      ytPlayerRef.current.setVolume(volume * 100);
+    const audio = audioRef.current;
+    
+    const handleTimeUpdate = () => setCurrentTime(audio.currentTime);
+    const handleDurationChange = () => setDuration(audio.duration || 0);
+    const handleEnded = () => handleNext();
+    const handlePlaying = () => { setIsPlaying(true); setIsLoading(false); };
+    const handlePause = () => setIsPlaying(false);
+    const handleWaiting = () => setIsLoading(true);
+    const handleError = (e) => {
+      console.warn("Audio stream error, skipping...", e);
+      handleNext();
+    };
+
+    audio.addEventListener('timeupdate', handleTimeUpdate);
+    audio.addEventListener('durationchange', handleDurationChange);
+    audio.addEventListener('ended', handleEnded);
+    audio.addEventListener('playing', handlePlaying);
+    audio.addEventListener('pause', handlePause);
+    audio.addEventListener('waiting', handleWaiting);
+    audio.addEventListener('error', handleError);
+
+    return () => {
+      audio.removeEventListener('timeupdate', handleTimeUpdate);
+      audio.removeEventListener('durationchange', handleDurationChange);
+      audio.removeEventListener('ended', handleEnded);
+      audio.removeEventListener('playing', handlePlaying);
+      audio.removeEventListener('pause', handlePause);
+      audio.removeEventListener('waiting', handleWaiting);
+      audio.removeEventListener('error', handleError);
+    };
+  }, [/* dependencies handled by stable functions or ref */]);
+
+  // Handle MediaSession API for lock screen and notification controls
+  useEffect(() => {
+    if ('mediaSession' in navigator && currentSong) {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: currentSong.title,
+        artist: currentSong.artist,
+        artwork: [{ src: currentSong.thumbnail, sizes: '512x512', type: 'image/jpeg' }]
+      });
+
+      navigator.mediaSession.setActionHandler('play', () => audioRef.current.play());
+      navigator.mediaSession.setActionHandler('pause', () => audioRef.current.pause());
+      navigator.mediaSession.setActionHandler('previoustrack', handlePrev);
+      navigator.mediaSession.setActionHandler('nexttrack', handleNext);
     }
+  }, [currentSong]);
+
+  // Sync volume
+  useEffect(() => {
+    audioRef.current.volume = volume;
   }, [volume]);
 
-  // Polling for current time
+  // Handle play state sync
   useEffect(() => {
-    let interval;
     if (isPlaying) {
-      interval = setInterval(async () => {
-        if (ytPlayerRef.current && ytPlayerRef.current.getCurrentTime) {
-          const time = await ytPlayerRef.current.getCurrentTime();
-          setCurrentTime(time);
-          const dur = await ytPlayerRef.current.getDuration();
-          if (dur) setDuration(dur);
-        }
-      }, 500);
+      audioRef.current.play().catch(e => console.error("Play prevented", e));
+    } else {
+      audioRef.current.pause();
     }
-    return () => clearInterval(interval);
   }, [isPlaying]);
 
   const playSong = useCallback((song, songQueue = null) => {
@@ -58,6 +98,12 @@ export function PlayerProvider({ children }) {
       setQueue(songQueue);
       setQueueIndex(songQueue.findIndex(s => s.id === song.id) || 0);
     }
+
+    // Set Audio Source to Backend Stream
+    const API = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+    audioRef.current.src = `${API}/api/song/stream/${song.id}`;
+    audioRef.current.load();
+    setIsPlaying(true); // Triggers play in useEffect
 
     // Track recently played
     setRecentlyPlayed(prev => {
@@ -89,13 +135,9 @@ export function PlayerProvider({ children }) {
   }, []);
 
   const togglePlay = useCallback(() => {
-    if (!currentSong || !ytPlayerRef.current) return;
-    if (isPlaying) {
-      ytPlayerRef.current.pauseVideo();
-    } else {
-      ytPlayerRef.current.playVideo();
-    }
-  }, [isPlaying, currentSong]);
+    if (!currentSong) return;
+    setIsPlaying(p => !p);
+  }, [currentSong]);
 
   const handleNext = useCallback(async () => {
     if (queue.length === 0) return;
@@ -116,7 +158,7 @@ export function PlayerProvider({ children }) {
           const data = await res.json();
           
           if (data.song) {
-            const newQueue = [...queue, data.song];
+            const newQueue = [...queue, ...data.queue];
             setQueue(newQueue);
             setQueueIndex(nextIdx);
             playSong(data.song, newQueue);
@@ -147,8 +189,8 @@ export function PlayerProvider({ children }) {
   }, [queue, queueIndex, playSong, currentTime]);
 
   const seek = useCallback((time) => {
-    if (ytPlayerRef.current) {
-      ytPlayerRef.current.seekTo(time, true);
+    if (audioRef.current) {
+      audioRef.current.currentTime = time;
       setCurrentTime(time);
     }
   }, []);
@@ -164,25 +206,8 @@ export function PlayerProvider({ children }) {
 
   const isLiked = useCallback((id) => liked.some(s => s.id === id), [liked]);
 
-  const onPlayerReady = (e) => {
-    ytPlayerRef.current = e.target;
-    e.target.setVolume(volume * 100);
-  };
-
-  const onPlayerStateChange = (e) => {
-    // 1 = playing, 2 = paused, 0 = ended, 3 = buffering
-    if (e.data === 1) {
-      setIsPlaying(true);
-      setIsLoading(false);
-      setDuration(e.target.getDuration());
-    } else if (e.data === 2) {
-      setIsPlaying(false);
-    } else if (e.data === 0) {
-      handleNext();
-    } else if (e.data === 3) {
-      setIsLoading(true);
-    }
-  };
+  // Hook dependencies setup above means we must keep handleNext, handlePrev stable 
+  // which they are via useCallback.
 
   return (
     <PlayerContext.Provider value={{
@@ -192,25 +217,6 @@ export function PlayerProvider({ children }) {
       setVolume, toggleLike, isLiked,
       setShuffle, setRepeat,
     }}>
-      {/* Hidden YouTube iframe handles the actual playback perfectly! */}
-      {currentSong && (
-        <div style={{ display: 'none' }}>
-          <YouTube
-            videoId={currentSong.id}
-            opts={{
-              height: '0',
-              width: '0',
-              playerVars: { autoplay: 1, controls: 0 }
-            }}
-            onReady={onPlayerReady}
-            onStateChange={onPlayerStateChange}
-            onError={() => {
-              console.warn('YouTube Player Error. Skipping to next...');
-              handleNext();
-            }}
-          />
-        </div>
-      )}
       {children}
     </PlayerContext.Provider>
   );

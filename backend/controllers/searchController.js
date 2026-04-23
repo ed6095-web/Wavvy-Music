@@ -100,10 +100,9 @@ exports.getAutoplay = async (req, res) => {
       const filtered = results.filter(s => s.title !== title);
       const options = filtered.length > 0 ? filtered : results;
       
-      // Pick a random song from the top 10 most related results
-      const maxRange = Math.min(10, options.length);
-      const randomIdx = Math.floor(Math.random() * maxRange);
-      res.json({ song: options[randomIdx] });
+      // Return top 10 most related results for the "Nxt Wave" queue
+      const queue = options.slice(0, 10);
+      res.json({ song: queue[0], queue });
     } else {
       res.status(404).json({ error: 'No related songs found' });
     }

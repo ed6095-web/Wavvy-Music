@@ -1,3 +1,210 @@
+/* ── Full-screen player (YouTube Music style) ── */
+.player-fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, #1a0a2e 0%, #0d0d0d 60%);
+  padding: 0 24px 32px;
+  overflow: hidden;
+  animation: slideUp 0.35s cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.pf-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: env(safe-area-inset-top, 48px);
+  padding-bottom: 8px;
+}
+.pf-down-btn {
+  background: none; border: none; cursor: pointer;
+  color: var(--text-secondary);
+  width: 40px; height: 40px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  transition: background 0.2s;
+}
+.pf-down-btn:hover { background: rgba(255,255,255,0.1); }
+.pf-queue-label {
+  font-size: 0.78rem; font-weight: 600;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.pf-art-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 0;
+  min-height: 0;
+}
+.pf-art {
+  width: 100%;
+  max-width: 320px;
+  aspect-ratio: 1;
+  border-radius: 20px;
+  object-fit: cover;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.7);
+}
+
+.pf-info-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.pf-info { flex: 1; min-width: 0; }
+.pf-title {
+  font-size: 1.2rem; font-weight: 700;
+  color: #fff;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.pf-artist {
+  font-size: 0.9rem; color: var(--text-secondary);
+  margin-top: 4px;
+}
+.pf-like-btn {
+  background: none; border: none; cursor: pointer;
+  font-size: 1.6rem; color: var(--text-muted);
+  transition: all 0.2s; flex-shrink: 0;
+}
+.pf-like-btn.liked { color: #ff4081; }
+.pf-like-btn:hover { transform: scale(1.15); }
+
+.pf-progress-section { margin-bottom: 16px; }
+.pf-progress-track {
+  width: 100%; height: 4px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 4px;
+  cursor: pointer;
+  position: relative;
+  transition: height 0.2s;
+}
+.pf-progress-track:hover { height: 6px; }
+.pf-progress-fill {
+  height: 100%;
+  background: var(--accent-gradient);
+  border-radius: 4px;
+  position: relative;
+}
+.pf-progress-thumb {
+  position: absolute; right: -7px; top: 50%;
+  transform: translateY(-50%);
+  width: 14px; height: 14px;
+  border-radius: 50%; background: #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.pf-progress-track:hover .pf-progress-thumb { opacity: 1; }
+.pf-time-row {
+  display: flex; justify-content: space-between;
+  margin-top: 8px;
+  font-size: 0.72rem; color: var(--text-muted);
+}
+
+.pf-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+.pf-ctrl-btn {
+  background: none; border: none; cursor: pointer;
+  color: var(--text-secondary);
+  display: flex; align-items: center; justify-content: center;
+  width: 44px; height: 44px; border-radius: 50%;
+  transition: all 0.2s;
+}
+.pf-ctrl-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.pf-active { color: var(--accent-purple) !important; }
+.pf-play-btn {
+  width: 64px; height: 64px; border-radius: 50%;
+  background: var(--accent-gradient);
+  border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff;
+  box-shadow: 0 6px 24px rgba(123,47,255,0.5);
+  transition: all 0.2s;
+}
+.pf-play-btn:hover { transform: scale(1.07); }
+.pf-play-btn:active { transform: scale(0.95); }
+
+.pf-volume {
+  display: flex; align-items: center; gap: 10px;
+}
+.pf-volume-slider {
+  flex: 1; -webkit-appearance: none;
+  height: 4px; border-radius: 4px;
+  background: rgba(255,255,255,0.2);
+  outline: none; cursor: pointer;
+}
+.pf-volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px; height: 14px;
+  border-radius: 50%; background: #fff;
+  cursor: pointer;
+}
+
+.pf-scroll-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 24px;
+}
+
+/* Nxt Wave Queue UI */
+.nxt-wave-section {
+  margin-top: 32px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 20px;
+  padding: 16px;
+}
+.nxt-wave-title {
+  font-size: 1rem; font-weight: 700;
+  color: #fff; margin-bottom: 12px;
+  letter-spacing: 0.05em;
+  background: linear-gradient(90deg, #ff4081, #7b2fff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.nxt-wave-list {
+  display: flex; flex-direction: column; gap: 12px;
+}
+.nxt-wave-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 8px; border-radius: 12px;
+  cursor: pointer; transition: background 0.2s;
+}
+.nxt-wave-item:hover { background: rgba(255,255,255,0.08); }
+.nxt-wave-thumb {
+  width: 48px; height: 48px; border-radius: 8px; object-fit: cover;
+}
+.nxt-wave-info { flex: 1; min-width: 0; }
+.nxt-wave-song-title {
+  font-size: 0.9rem; font-weight: 600; color: #fff;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.nxt-wave-song-artist {
+  font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.nxt-wave-empty {
+  font-size: 0.85rem; color: var(--text-muted); text-align: center;
+  padding: 20px 0;
+}
+
+/* ── Mini player bar ── */
 .player-bar {
   position: fixed;
   bottom: 0; left: 0; right: 0;
@@ -11,6 +218,7 @@
   padding: 0 20px;
   gap: 16px;
   z-index: 1000;
+  cursor: pointer;
 }
 
 /* Left: song info */
