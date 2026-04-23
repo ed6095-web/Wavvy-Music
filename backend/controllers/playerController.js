@@ -17,14 +17,13 @@ exports.streamSong = async (req, res) => {
     const { videoId } = req.params;
     const url = `https://www.youtube.com/watch?v=${videoId}`;
 
-    // Set correct headers for audio streaming
-    res.setHeader('Content-Type', 'audio/webm');
-    res.setHeader('Accept-Ranges', 'bytes');
+    // Set correct headers for m4a audio streaming
+    res.setHeader('Content-Type', 'audio/mp4');
     res.setHeader('Cache-Control', 'no-cache');
 
     const ytDlpProcess = ytDlp.exec(url, {
       output: '-',
-      format: 'bestaudio/best',
+      format: 'bestaudio[ext=m4a]/bestaudio',
       quiet: true,
       noWarnings: true,
       // Increase reliability
