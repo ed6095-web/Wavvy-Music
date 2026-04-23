@@ -200,9 +200,10 @@
 
 /* Responsive */
 @media (max-width: 768px) {
-  .navbar { padding: 0 14px; justify-content: space-between; }
-  .nav-logo { flex: 1; justify-content: center; position: absolute; left: 50%; transform: translateX(-50%); }
-  .nav-logo-text { display: block; font-size: 1.5rem; }
+  .navbar { padding: 0 16px; justify-content: space-between; }
+  .nav-logo { flex: 1; justify-content: center; min-width: 0; }
+  .nav-logo-text { display: block; font-size: 1.4rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .nav-search { display: none; } /* Search page has its own search bar on mobile */
+  .nav-right { flex-shrink: 0; }
   .account-dropdown { right: -4px; width: 220px; }
 }

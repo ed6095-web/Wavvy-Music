@@ -5,15 +5,9 @@
   z-index: 2000;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(180deg, #1a0a2e 0%, #0d0d0d 60%);
-  padding: 0 24px 32px;
+  background: var(--bg-primary); /* Simplified background */
+  padding: env(safe-area-inset-top, 24px) 24px 32px;
   overflow: hidden;
-  animation: slideUp 0.35s cubic-bezier(0.32, 0.72, 0, 1) both;
-}
-
-@keyframes slideUp {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
 }
 
 .pf-topbar {
@@ -39,12 +33,11 @@
 }
 
 .pf-art-wrap {
-  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 16px 0;
-  min-height: 0;
+  padding: 20px 0;
+  margin: auto 0; /* Auto margin pushes it to take remaining center space */
 }
 .pf-art {
   width: 100%;
@@ -63,9 +56,10 @@
 }
 .pf-info { flex: 1; min-width: 0; }
 .pf-title {
-  font-size: 1.2rem; font-weight: 700;
+  font-size: 1.3rem; font-weight: 700;
   color: #fff;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  max-width: 100%;
 }
 .pf-artist {
   font-size: 0.9rem; color: var(--text-secondary);
@@ -382,9 +376,9 @@
   /* Player sits ABOVE the bottom nav bar */
   .player-bar {
     bottom: 60px;
-    padding: 0 12px;
-    gap: 10px;
-    height: 64px;
+    padding: 10px 16px;
+    gap: 12px;
+    height: 70px;
   }
 
   /* Hide desktop center controls — use inline mobile controls instead */

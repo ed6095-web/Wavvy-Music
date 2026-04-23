@@ -1,9 +1,11 @@
 import React, { createContext, useContext, useRef, useState, useEffect, useCallback } from 'react';
+import { BackgroundMode } from '@anuradev/capacitor-background-mode';
+import { Capacitor } from '@capacitor/core';
 
 const PlayerContext = createContext(null);
 
 export function PlayerProvider({ children }) {
-  const audioRef = useRef(new Audio());
+  const audioRef = useRef(null);
   const [currentSong, setCurrentSong] = useState(null);
   const [queue, setQueue] = useState([]);
   const [queueIndex, setQueueIndex] = useState(0);
@@ -25,69 +27,84 @@ export function PlayerProvider({ children }) {
   const [repeat, setRepeat] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Setup HTML5 Audio element listeners
+  // Initialize background mode when first mounted
   useEffect(() => {
-    const audio = audioRef.current;
-    
-    const handleTimeUpdate = () => setCurrentTime(audio.currentTime);
-    const handleDurationChange = () => setDuration(audio.duration || 0);
-    const handleEnded = () => handleNext();
-    const handlePlaying = () => { setIsPlaying(true); setIsLoading(false); };
-    const handlePause = () => setIsPlaying(false);
-    const handleWaiting = () => setIsLoading(true);
-    const handleError = (e) => {
-      console.warn("Audio stream error, skipping...", e);
-      handleNext();
-    };
+    if (Capacitor.isNativePlatform()) {
+      BackgroundMode.enable();
+      BackgroundMode.setSettings({
+        title: "Wavvy Music",
+        text: "Background mode enabled",
+        icon: "ic_launcher",
+        color: "7B2FFF",
+        resume: true,
+        hidden: false,
+        bigText: false
+      });
+    }
+  }, []);
 
-    audio.addEventListener('timeupdate', handleTimeUpdate);
-    audio.addEventListener('durationchange', handleDurationChange);
-    audio.addEventListener('ended', handleEnded);
-    audio.addEventListener('playing', handlePlaying);
-    audio.addEventListener('pause', handlePause);
-    audio.addEventListener('waiting', handleWaiting);
-    audio.addEventListener('error', handleError);
+  const API = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
-    return () => {
-      audio.removeEventListener('timeupdate', handleTimeUpdate);
-      audio.removeEventListener('durationchange', handleDurationChange);
-      audio.removeEventListener('ended', handleEnded);
-      audio.removeEventListener('playing', handlePlaying);
-      audio.removeEventListener('pause', handlePause);
-      audio.removeEventListener('waiting', handleWaiting);
-      audio.removeEventListener('error', handleError);
-    };
-  }, [/* dependencies handled by stable functions or ref */]);
+  // Initialize audio element
+  useEffect(() => {
+    if (!audioRef.current) {
+      audioRef.current = new Audio();
+      audioRef.current.volume = volume;
 
-  // Handle MediaSession API for lock screen and notification controls
+      audioRef.current.addEventListener('timeupdate', () => {
+        setCurrentTime(audioRef.current.currentTime);
+      });
+
+      audioRef.current.addEventListener('loadedmetadata', () => {
+        setDuration(audioRef.current.duration);
+        setIsLoading(false);
+      });
+
+      audioRef.current.addEventListener('ended', () => {
+        handleNext();
+      });
+
+      audioRef.current.addEventListener('play', () => setIsPlaying(true));
+      audioRef.current.addEventListener('pause', () => setIsPlaying(false));
+      audioRef.current.addEventListener('waiting', () => setIsLoading(true));
+      audioRef.current.addEventListener('playing', () => setIsLoading(false));
+      
+      audioRef.current.addEventListener('error', (e) => {
+        console.error("Audio error:", e);
+        setIsLoading(false);
+        // Automatically skip to next on error
+        handleNext();
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = volume;
+    }
+  }, [volume]);
+
+  // Set Media Session metadata for lock screen & notification controls
   useEffect(() => {
     if ('mediaSession' in navigator && currentSong) {
       navigator.mediaSession.metadata = new MediaMetadata({
         title: currentSong.title,
         artist: currentSong.artist,
-        artwork: [{ src: currentSong.thumbnail, sizes: '512x512', type: 'image/jpeg' }]
+        album: 'Wavvy',
+        artwork: [
+          { src: currentSong.thumbnail, sizes: '512x512', type: 'image/jpeg' }
+        ]
       });
 
-      navigator.mediaSession.setActionHandler('play', () => audioRef.current.play());
-      navigator.mediaSession.setActionHandler('pause', () => audioRef.current.pause());
+      navigator.mediaSession.setActionHandler('play', togglePlay);
+      navigator.mediaSession.setActionHandler('pause', togglePlay);
       navigator.mediaSession.setActionHandler('previoustrack', handlePrev);
       navigator.mediaSession.setActionHandler('nexttrack', handleNext);
+      navigator.mediaSession.setActionHandler('seekto', (details) => {
+        seek(details.seekTime);
+      });
     }
-  }, [currentSong]);
-
-  // Sync volume
-  useEffect(() => {
-    audioRef.current.volume = volume;
-  }, [volume]);
-
-  // Handle play state sync
-  useEffect(() => {
-    if (isPlaying) {
-      audioRef.current.play().catch(e => console.error("Play prevented", e));
-    } else {
-      audioRef.current.pause();
-    }
-  }, [isPlaying]);
+  }, [currentSong, isPlaying]);
 
   const playSong = useCallback((song, songQueue = null) => {
     if (!song) return;
@@ -99,11 +116,19 @@ export function PlayerProvider({ children }) {
       setQueueIndex(songQueue.findIndex(s => s.id === song.id) || 0);
     }
 
-    // Set Audio Source to Backend Stream
-    const API = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-    audioRef.current.src = `${API}/api/song/stream/${song.id}`;
-    audioRef.current.load();
-    setIsPlaying(true); // Triggers play in useEffect
+    if (Capacitor.isNativePlatform()) {
+      BackgroundMode.setSettings({ text: `${song.title} - ${song.artist}` });
+    }
+
+    // Set audio source to our backend stream route
+    const streamUrl = `${API}/api/song/stream/${song.id}`;
+    if (audioRef.current) {
+      audioRef.current.src = streamUrl;
+      audioRef.current.play().catch(e => {
+        console.error("Play prevented", e);
+        setIsPlaying(false);
+      });
+    }
 
     // Track recently played
     setRecentlyPlayed(prev => {
@@ -119,7 +144,6 @@ export function PlayerProvider({ children }) {
       counts[song.id] = (counts[song.id] || 0) + 1;
       localStorage.setItem('wavvy_playcounts', JSON.stringify(counts));
       
-      // Auto-save to offline if played >= 5 times
       if (counts[song.id] >= 5) {
         setOfflineSongs(offPrev => {
           if (!offPrev.find(s => s.id === song.id)) {
@@ -135,9 +159,13 @@ export function PlayerProvider({ children }) {
   }, []);
 
   const togglePlay = useCallback(() => {
-    if (!currentSong) return;
-    setIsPlaying(p => !p);
-  }, [currentSong]);
+    if (!currentSong || !audioRef.current) return;
+    if (isPlaying) {
+      audioRef.current.pause();
+    } else {
+      audioRef.current.play();
+    }
+  }, [isPlaying, currentSong]);
 
   const handleNext = useCallback(async () => {
     if (queue.length === 0) return;
@@ -148,10 +176,8 @@ export function PlayerProvider({ children }) {
       if (repeat) {
         nextIdx = 0;
       } else {
-        // Auto-play feature: fetch related song
         setIsLoading(true);
         try {
-          const API = import.meta.env.VITE_API_URL || 'http://localhost:3001';
           const artist = currentSong?.artist || '';
           const title = currentSong?.title || '';
           const res = await fetch(`${API}/api/search/autoplay?artist=${encodeURIComponent(artist)}&title=${encodeURIComponent(title)}`);
@@ -205,9 +231,6 @@ export function PlayerProvider({ children }) {
   }, []);
 
   const isLiked = useCallback((id) => liked.some(s => s.id === id), [liked]);
-
-  // Hook dependencies setup above means we must keep handleNext, handlePrev stable 
-  // which they are via useCallback.
 
   return (
     <PlayerContext.Provider value={{

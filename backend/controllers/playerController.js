@@ -1,4 +1,4 @@
-const ytdl = require('@distube/ytdl-core');
+const ytDlp = require('yt-dlp-exec');
 const { getVideoInfo } = require('../services/ytmusicService');
 
 exports.getSongInfo = async (req, res) => {
@@ -17,31 +17,41 @@ exports.streamSong = async (req, res) => {
     const { videoId } = req.params;
     const url = `https://www.youtube.com/watch?v=${videoId}`;
 
-    if (!ytdl.validateID(videoId)) {
-      return res.status(400).json({ error: 'Invalid video ID' });
-    }
-
-    const info = await ytdl.getInfo(url);
-    const format = ytdl.chooseFormat(info.formats, {
-      quality: 'highestaudio',
-      filter: 'audioonly',
-    });
-
-    if (!format) {
-      return res.status(404).json({ error: 'No audio format found' });
-    }
-
-    // Set correct Content-Type so browser knows how to decode the stream
-    res.setHeader('Content-Type', format.mimeType || 'audio/webm');
+    // Set correct headers for audio streaming
+    res.setHeader('Content-Type', 'audio/webm');
     res.setHeader('Accept-Ranges', 'bytes');
     res.setHeader('Cache-Control', 'no-cache');
-    res.setHeader('X-Song-Title', encodeURIComponent(info.videoDetails.title));
 
-    ytdl(url, {
-      format,
-      filter: 'audioonly',
-      quality: 'highestaudio',
-    }).pipe(res);
+    const ytDlpProcess = ytDlp.exec(url, {
+      output: '-',
+      format: 'bestaudio/best',
+      quiet: true,
+      noWarnings: true,
+      // Increase reliability
+      addHeader: [
+        'referer:youtube.com',
+        'user-agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+      ]
+    });
+
+    // Pipe the stdout of yt-dlp directly to the Express response
+    ytDlpProcess.stdout.pipe(res);
+
+    // Handle process errors
+    ytDlpProcess.on('error', (err) => {
+      console.error('yt-dlp error:', err);
+      if (!res.headersSent) {
+        res.status(500).end('Stream failed');
+      }
+    });
+
+    // Handle client disconnects to prevent zombie processes
+    req.on('close', () => {
+      if (ytDlpProcess && !ytDlpProcess.killed) {
+        ytDlpProcess.kill('SIGKILL');
+      }
+    });
+
   } catch (err) {
     console.error('Stream error:', err.message);
     if (!res.headersSent) {
