@@ -1,0 +1,194 @@
+/* ── Onboarding Modal ───────────────────────────────────────────── */
+
+.onboarding-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(8, 8, 10, 0.96);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  overflow: hidden;
+}
+.onboarding-overlay.visible { opacity: 1; }
+
+/* Animated background orbs */
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  animation: orbFloat 8s ease-in-out infinite;
+}
+.orb-1 {
+  width: 420px; height: 420px;
+  background: radial-gradient(circle, rgba(123,47,255,0.25) 0%, transparent 70%);
+  top: -100px; left: -100px;
+  animation-delay: 0s;
+}
+.orb-2 {
+  width: 380px; height: 380px;
+  background: radial-gradient(circle, rgba(233,30,140,0.2) 0%, transparent 70%);
+  bottom: -80px; right: -80px;
+  animation-delay: -3s;
+}
+.orb-3 {
+  width: 280px; height: 280px;
+  background: radial-gradient(circle, rgba(255,59,48,0.15) 0%, transparent 70%);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  animation-delay: -6s;
+}
+@keyframes orbFloat {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-30px) scale(1.05); }
+}
+
+/* Card */
+.onboarding-card {
+  position: relative;
+  z-index: 1;
+  width: min(480px, calc(100vw - 40px));
+  background: rgba(20, 20, 24, 0.85);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 28px;
+  padding: 48px 40px;
+  text-align: center;
+  transform: translateY(40px) scale(0.96);
+  opacity: 0;
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(123,47,255,0.08);
+}
+.onboarding-card.visible {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+
+/* Logo */
+.ob-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 28px;
+}
+.ob-brand {
+  font-size: 1.8rem;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+}
+
+/* Heading */
+.ob-heading {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin-bottom: 12px;
+  line-height: 1.2;
+  color: #fff;
+}
+
+.ob-subtext {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 36px;
+}
+
+/* Form */
+.ob-form { display: flex; flex-direction: column; gap: 14px; }
+
+.ob-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.ob-input-icon {
+  position: absolute;
+  left: 16px;
+  width: 18px; height: 18px;
+  color: var(--text-muted);
+  pointer-events: none;
+  z-index: 1;
+}
+.ob-input {
+  width: 100%;
+  background: rgba(255,255,255,0.06);
+  border: 1.5px solid rgba(255,255,255,0.1);
+  border-radius: 16px;
+  padding: 16px 44px 16px 48px;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 500;
+  outline: none;
+  transition: all 0.25s ease;
+  letter-spacing: 0.01em;
+}
+.ob-input::placeholder { color: rgba(255,255,255,0.3); }
+.ob-input:focus {
+  background: rgba(255,255,255,0.09);
+  border-color: var(--accent-purple);
+  box-shadow: 0 0 0 4px rgba(123,47,255,0.15);
+}
+.ob-input.error {
+  border-color: var(--accent-red);
+  box-shadow: 0 0 0 4px rgba(255,59,48,0.12);
+}
+
+.ob-clear {
+  position: absolute;
+  right: 16px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: color 0.15s;
+  padding: 4px;
+}
+.ob-clear:hover { color: #fff; }
+
+.ob-error {
+  color: var(--accent-red);
+  font-size: 0.82rem;
+  text-align: left;
+  margin-top: -4px;
+}
+
+/* Submit button */
+.ob-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px 32px;
+  font-size: 1rem;
+  font-weight: 700;
+  border-radius: 16px;
+  margin-top: 6px;
+  letter-spacing: 0.01em;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.ob-btn svg { width: 18px; height: 18px; }
+.ob-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(123,47,255,0.5);
+}
+.ob-btn:active { transform: scale(0.97); }
+
+/* Footer note */
+.ob-footer {
+  margin-top: 24px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+/* Mobile */
+@media (max-width: 520px) {
+  .onboarding-card { padding: 36px 24px; }
+  .ob-heading { font-size: 1.6rem; }
+}

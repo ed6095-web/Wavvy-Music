@@ -1,0 +1,85 @@
+.song-card {
+  display: flex;
+  flex-direction: column;
+  width: 160px;
+  flex-shrink: 0;
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  padding: 12px;
+  background: var(--bg-card);
+  border: 1px solid transparent;
+  transition: all var(--transition-normal);
+}
+.song-card:hover {
+  background: var(--glass-hover);
+  border-color: var(--border);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+}
+.song-card.active {
+  background: rgba(123,47,255,0.1);
+  border-color: rgba(123,47,255,0.3);
+}
+
+.song-card-thumb-wrap {
+  position: relative;
+  width: 100%; aspect-ratio: 1;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+.song-card-thumb {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transition: transform var(--transition-normal);
+}
+.song-card:hover .song-card-thumb { transform: scale(1.05); }
+
+.song-card-overlay {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0;
+  transition: opacity var(--transition-normal);
+}
+.song-card:hover .song-card-overlay,
+.song-card.active .song-card-overlay { opacity: 1; }
+
+.song-card-play-btn {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: var(--accent-gradient);
+  border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 1.1rem;
+  transform: scale(0.8);
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+}
+.song-card-play-btn svg { width: 20px; height: 20px; margin-left: 2px; }
+.song-card:hover .song-card-play-btn { transform: scale(1); box-shadow: 0 6px 24px rgba(123,47,255,0.5); }
+
+.song-card-info { flex: 1; min-width: 0; }
+.song-card-title {
+  font-size: 0.82rem; font-weight: 600;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  margin-bottom: 3px;
+}
+.song-card-artist {
+  font-size: 0.73rem; color: var(--text-secondary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.song-card-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 8px;
+}
+.song-card-duration { font-size: 0.7rem; color: var(--text-muted); }
+.song-card-like {
+  background: none; border: none; cursor: pointer;
+  font-size: 1rem; color: var(--text-muted);
+  transition: all var(--transition-fast);
+  line-height: 1;
+}
+.song-card-like:hover { color: var(--accent-pink); transform: scale(1.2); }
+.song-card-like.liked { color: var(--accent-pink); }

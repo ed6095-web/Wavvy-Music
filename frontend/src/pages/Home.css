@@ -1,0 +1,7 @@
+.home-page {
+  padding: 28px 28px 0;
+  animation: fadeInUp 0.4s ease both;
+}
+@media (max-width: 768px) {
+  .home-page { padding: 16px 16px 0; }
+}

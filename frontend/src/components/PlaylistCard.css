@@ -1,0 +1,37 @@
+.playlist-card {
+  position: relative;
+  width: 160px; height: 160px;
+  flex-shrink: 0;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  cursor: pointer;
+  display: flex; flex-direction: column;
+  justify-content: flex-end;
+  padding: 16px;
+  transition: all var(--transition-normal);
+}
+.playlist-card:hover { transform: translateY(-5px) scale(1.03); }
+
+.playlist-card-bg {
+  position: absolute; inset: 0;
+  background: var(--card-gradient, var(--accent-gradient));
+  opacity: 0.85;
+  transition: opacity var(--transition-normal);
+}
+.playlist-card:hover .playlist-card-bg { opacity: 1; }
+
+.playlist-card-content { position: relative; z-index: 1; }
+.playlist-card-icon { font-size: 2rem; margin-bottom: 6px; }
+.playlist-card-name {
+  font-size: 0.95rem; font-weight: 700;
+  color: #fff;
+}
+.playlist-card-sub { font-size: 0.72rem; color: rgba(255,255,255,0.7); margin-top: 2px; }
+
+.playlist-card-arrow {
+  position: absolute; top: 14px; right: 14px;
+  font-size: 1rem; color: rgba(255,255,255,0.6);
+  z-index: 1;
+  transition: transform var(--transition-fast), color var(--transition-fast);
+}
+.playlist-card:hover .playlist-card-arrow { transform: translateX(3px); color: #fff; }

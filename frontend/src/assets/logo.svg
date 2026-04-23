@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" fill="none">
+  <defs>
+    <linearGradient id="wg" x1="0" y1="0" x2="360" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#5B21D6"/>
+      <stop offset="35%" stop-color="#C026A0"/>
+      <stop offset="65%" stop-color="#E91E8C"/>
+      <stop offset="100%" stop-color="#FF4040"/>
+    </linearGradient>
+    <linearGradient id="wg2" x1="0" y1="0" x2="360" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#3B0FAA" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#CC2020" stop-opacity="0.5"/>
+    </linearGradient>
+    <filter id="blur">
+      <feGaussianBlur stdDeviation="4"/>
+    </filter>
+  </defs>
+  <!-- Shadow layer -->
+  <path d="M40,65 C55,155 85,155 100,65 C115,-25 145,-25 160,65 C175,155 205,155 220,65 C235,-25 265,-25 280,65 C290,100 310,115 320,100"
+    stroke="url(#wg2)" stroke-width="32" stroke-linecap="round" filter="url(#blur)"/>
+  <!-- Main wave path -->
+  <path d="M40,65 C55,155 85,155 100,65 C115,-25 145,-25 160,65 C175,155 205,155 220,65 C235,-25 265,-25 280,65 C290,100 310,115 320,100"
+    stroke="url(#wg)" stroke-width="26" stroke-linecap="round"/>
+</svg>

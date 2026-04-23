@@ -1,0 +1,56 @@
+.library-page { padding: 28px; animation: fadeInUp 0.4s ease both; }
+
+.library-header { margin-bottom: 32px; }
+.library-title {
+  font-size: 2rem; font-weight: 800;
+  letter-spacing: -0.03em;
+  margin-bottom: 20px;
+}
+
+.library-tabs { display: flex; gap: 10px; }
+.lib-tab {
+  padding: 9px 20px;
+  border-radius: 50px;
+  background: var(--glass);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 0.85rem; font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.lib-tab:hover { background: var(--glass-hover); color: var(--text-primary); }
+.lib-tab.active {
+  background: rgba(123,47,255,0.2);
+  border-color: rgba(123,47,255,0.4);
+  color: var(--text-primary);
+}
+
+.library-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 16px;
+}
+
+.library-empty {
+  text-align: center;
+  padding: 80px 20px;
+}
+.library-empty-icon {
+  font-size: 3.5rem;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+.library-empty-title {
+  font-size: 1.2rem; font-weight: 700;
+  margin-bottom: 8px;
+}
+.library-empty-sub {
+  font-size: 0.9rem; color: var(--text-secondary);
+  max-width: 280px; margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+  .library-page { padding: 16px; }
+  .library-tabs { flex-wrap: wrap; }
+  .library-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+}
